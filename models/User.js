@@ -4,11 +4,14 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["user", "moderator", "admin"],
+      default: "user",
+    },
   },
-  { timestamps: true } // <-- এটা এখানে options হিসেবে দিতে হবে
+  { timestamps: true }
 );
 
-
-const User = mongoose.model("User", userSchema);
-export default User;
+export default mongoose.model("User", userSchema);

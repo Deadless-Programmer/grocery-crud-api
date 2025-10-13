@@ -1,5 +1,6 @@
 import express from "express";
 import Product from "../models/Product.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.post("/", async (req, res) => {
 });
 
 // READ All Products
-router.get("/", async (req, res) => {
+router.get("/", verifyToken,  async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);
