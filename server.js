@@ -34,7 +34,7 @@ const corsOptions = {
 // 15 minute এ max 100 request প্রতি IP থেকে
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+   max: 1000,
   message: "Too many requests, please try again later.",
 });
 

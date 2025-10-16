@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import dotenv from "dotenv";
+import { verifyToken } from "../middleware/auth.js";
 dotenv.config();
 
 const router = express.Router();
@@ -21,7 +22,7 @@ router.post("/login", async (req, res) => {
         .json({ message: "Email and password are required" });
 
     const user = await User.findOne({ email });
-    console.log("user:", user)
+    // console.log("user:", user)
     if (!user)
       return res.status(400).json({ message: "Invalid email or password" });
 
@@ -63,6 +64,19 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+
+
+
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    
+    const user = req.user; // token verify থেকে আসছে
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 

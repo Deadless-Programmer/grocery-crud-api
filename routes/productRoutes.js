@@ -1,11 +1,11 @@
 import express from "express";
 import Product from "../models/Product.js";
-import { verifyToken } from "../middleware/auth.js";
+import { authorizeRoles, verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // CREATE Product
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, authorizeRoles("admin", "moderator"), async (req, res) => {
   try {
     const { name, price, category, image } = req.body;
     const product = new Product({ name, price, category, image });
@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
 });
 
 // READ All Products
-router.get("/", verifyToken,  async (req, res) => {
+router.get("/",   async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);

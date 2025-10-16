@@ -54,6 +54,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+
 // UPDATE user
 router.put("/:id",  verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
@@ -101,6 +102,8 @@ router.put("/:id/role", verifyToken, authorizeRoles("admin"), async (req, res) =
     res.status(500).json({ message: "Server error", error });
   }
 });
+
+
 
 
 
