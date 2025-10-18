@@ -34,7 +34,7 @@ router.post("/login", async (req, res) => {
     const payload = {
       id: user._id,
       email: user.email,
-      role: user.role
+      role: user.role,name: user.name,
     };
 
     // short-lived access token
@@ -46,6 +46,20 @@ router.post("/login", async (req, res) => {
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
       expiresIn: "7d", // 7 days
     });
+
+
+   res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // https এ true
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+   console.log("Refresh token cookie set");
+
+
+
+
+    
 
     // respond with token and safe user info
     const safeUser = {
@@ -59,7 +73,7 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       accessToken,
-      refreshToken,
+     
       user: safeUser,
     });
   } catch (err) {
@@ -83,22 +97,53 @@ router.get("/me", verifyToken, async (req, res) => {
 // ========================== REFRESH TOKEN ==========================
 
 
+// router.post("/refresh", (req, res) => {
+//   const { token } = req.body;
+//   if (!token)
+//     return res.status(401).json({ message: "No refresh token provided" });
+
+//   jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
+//     if (err) return res.status(403).json({ message: "Invalid refresh token" });
+
+//     const newAccessToken = jwt.sign(
+//       { id: user.id, email: user.email , role: user.role},
+//       process.env.JWT_SECRET,
+//       { expiresIn: "15m" } // new short-lived token
+//     );
+
+//     res.json({ accessToken: newAccessToken });
+//   });
+// });
+
+// ========================== REFRESH TOKEN ==========================
 router.post("/refresh", (req, res) => {
-  const { token } = req.body;
-  if (!token)
+  // 🔹 Browser automatically cookie পাঠাবে
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken)
     return res.status(401).json({ message: "No refresh token provided" });
 
-  jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
+  jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: "Invalid refresh token" });
 
     const newAccessToken = jwt.sign(
-      { id: user.id, email: user.email , role: user.role},
+      { id: user.id, email: user.email, role: user.role, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" } // new short-lived token
+      { expiresIn: "15m" }
     );
 
     res.json({ accessToken: newAccessToken });
   });
 });
+
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("refreshToken", { httpOnly: true, path: "/" });
+  res.json({ message: "Logged out" });
+});
+
+
+
+
+
 
 export default router;
